@@ -7,7 +7,7 @@ Let's assume you are getting enough rest and protein, your training properly, et
 Then... 
 if you want to gain muscle and your weight isn't going up then you need to eat more.
 
-If you want to lose muscle and your weight isn't going down then you need to eat less.
+If you want to lose fat and your weight isn't going down then you need to eat less.
 
 ## Quick Start
 
