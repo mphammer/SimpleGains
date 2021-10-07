@@ -1,0 +1,6 @@
+env/
+__pycache__
+data/
+_simplegains.json
+results.md
+weight_log.txt
