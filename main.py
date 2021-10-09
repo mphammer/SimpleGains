@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from _best_fit_slope import *
-from _markdown_writer import *
-from _setup_script import *
+from _markdown_file import *
+from setup_script import *
 from _body_composition_calculator import *
 import matplotlib.pyplot as plt
 import numpy as np
@@ -110,7 +110,15 @@ if __name__ == "__main__":
     # Read in the weight log
     body_comp_data = read_json()
     weight_log = read_weight_log()
+
     results_file = MarkdownFile()
+
+    bmr = calculate_BMR(body_comp_data["weight_lbs"], body_comp_data["height_inches"], body_comp_data["age_years"])
+    tdee = get_average_weekly_TDEE(bmr, body_comp_data["activity_hours"])
+    results_file.write_text("STATS: Age {}; Weight {}; Height {}; Exercise Hours {}".format(body_comp_data["age_years"], body_comp_data["weight_lbs"], body_comp_data["height_inches"], body_comp_data["activity_hours"]))
+    results_file.write_text("Estimated TDEE: {:.2f}".format(tdee))
+    results_file.write_line()
+
     data = {}
     weeks = range(1,6)
     for i in weeks:
@@ -142,20 +150,16 @@ if __name__ == "__main__":
         bulk_cal_adjustment = calc_calories_for_goal_rate(data["weight_best_fit_slope"], goal_bulk_rate)
         cut_cal_adjustment = calc_calories_for_goal_rate(data["weight_best_fit_slope"], goal_cut_rate)
 
-        bmr = calculate_BMR(body_comp_data["weight_lbs"], body_comp_data["height_inches"], body_comp_data["age_years"])
-        tdee = get_average_weekly_TDEE(bmr, body_comp_data["activity_hours"])
-        
-        results_file.write_text("STATS: Age {}; Weight {}; Height {}; Exercise Hours {}".format(body_comp_data["age_years"], body_comp_data["weight_lbs"], body_comp_data["height_inches"], body_comp_data["activity_hours"]))
-        results_file.write_text("Estimated TDEE: {:.2f}".format(tdee))
-
-        results_file.write_line()
-
-        results_file.write_heading("{} Week Results".format(i))
+        results_file.write_heading("Results Over Past {} Week(s)".format(i))
         results_file.write_image(plot_name)
         results_file.write_text("Rates: Weight {:.2f} lbs/week; Bfp {:.2f} %/week".format(data["weight_best_fit_slope"], data["bfp_best_fit_slope"]))
         results_file.write_text("Averages: Weight {:.2f} lbs; Bfp {:.2f}%".format(data["avg_weight"], data["avg_bfp"]))
         results_file.write_text("To bulk at {:.2f} lbs/week you should adjust daily calories by {:.2f}".format(goal_bulk_rate, bulk_cal_adjustment))
         results_file.write_text("To cut at {:.2f} lbs/week you should adjust daily calories by {:.2f}".format(goal_cut_rate, cut_cal_adjustment))
-        
-
+        if data["avg_bfp"] >= 15.0:
+            results_file.write_text("Your body fat percentage is above 15%. You should cut.")
+        elif data["avg_bfp"] <= 10.0:
+            results_file.write_text("Your body fat percentage is above 15%. You should bulk.")
+        else:
+            results_file.write_text("Your body fat percentage is within 10-15%. Keep going!")
     
