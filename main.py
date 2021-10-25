@@ -121,18 +121,19 @@ if __name__ == "__main__":
 
     data = {}
     weeks = range(1,6)
+    days_in_week = 7
     for i in weeks:
-        week_logs = get_last_N_logs(weight_log, i*7)
+        week_logs = get_last_N_logs(weight_log, i*days_in_week)
         data["week_logs"] = week_logs
         data["avg_weight"] = get_avg_weight(data["week_logs"])
         data["avg_bfp"] = get_avg_bfp(data["week_logs"])
         # weight
-        data["weight_values"] = get_last_N_weight_points(weight_log, i*7)
+        data["weight_values"] = get_last_N_weight_points(weight_log, i*days_in_week)
         data["weight_x_points"] = get_X_values_from_data_values(data["weight_values"])
         data["weight_y_points"] = [x for x in data["weight_values"] if x != 0.0]
         data["weight_best_fit_slope"] = calculate_best_fit_slope(data["weight_x_points"], data["weight_y_points"])
         # bfp
-        data["bfp_values"] = get_last_N_bfp_points(weight_log, i*7)
+        data["bfp_values"] = get_last_N_bfp_points(weight_log, i*days_in_week)
         data["bfp_x_points"] = get_X_values_from_data_values(data["bfp_values"])
         data["bfp_y_points"] = [x for x in data["bfp_values"] if x != 0.0]
         data["bfp_best_fit_slope"] = calculate_best_fit_slope(data["bfp_x_points"], data["bfp_y_points"])
@@ -145,21 +146,24 @@ if __name__ == "__main__":
         plt.savefig(plot_name)
         plt.clf()
 
-        goal_bulk_rate = 0.75
+        goal_bulk_rate = 0.5
         goal_cut_rate = -0.75
         bulk_cal_adjustment = calc_calories_for_goal_rate(data["weight_best_fit_slope"], goal_bulk_rate)
         cut_cal_adjustment = calc_calories_for_goal_rate(data["weight_best_fit_slope"], goal_cut_rate)
 
         results_file.write_heading("Results Over Past {} Week(s)".format(i))
         results_file.write_image(plot_name)
-        results_file.write_text("Rates: Weight {:.2f} lbs/week; Bfp {:.2f} %/week".format(data["weight_best_fit_slope"], data["bfp_best_fit_slope"]))
+        results_file.write_text("Rates: Weight {:.2f} lbs/week; Bfp {:.2f} %/week".format(data["weight_best_fit_slope"]*days_in_week, data["bfp_best_fit_slope"]*days_in_week))
         results_file.write_text("Averages: Weight {:.2f} lbs; Bfp {:.2f}%".format(data["avg_weight"], data["avg_bfp"]))
         results_file.write_text("To bulk at {:.2f} lbs/week you should adjust daily calories by {:.2f}".format(goal_bulk_rate, bulk_cal_adjustment))
         results_file.write_text("To cut at {:.2f} lbs/week you should adjust daily calories by {:.2f}".format(goal_cut_rate, cut_cal_adjustment))
-        if data["avg_bfp"] >= 15.0:
-            results_file.write_text("Your body fat percentage is above 15%. You should cut.")
-        elif data["avg_bfp"] <= 10.0:
-            results_file.write_text("Your body fat percentage is above 15%. You should bulk.")
+        
+        max_bfp = 13.0
+        min_bfp = 10.0
+        if data["avg_bfp"] >= max_bfp:
+            results_file.write_text("Your body fat percentage is above {}%. You should cut.".format(max_bfp))
+        elif data["avg_bfp"] <= min_bfp:
+            results_file.write_text("Your body fat percentage is above {}%. You should bulk.".format(min_bfp))
         else:
-            results_file.write_text("Your body fat percentage is within 10-15%. Keep going!")
+            results_file.write_text("Your body fat percentage is within {}-{}%. Keep going!".format(min_bfp, max_bfp))
     
