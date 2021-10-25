@@ -148,8 +148,8 @@ if __name__ == "__main__":
 
         goal_bulk_rate = 0.5
         goal_cut_rate = -0.75
-        bulk_cal_adjustment = calc_calories_for_goal_rate(data["weight_best_fit_slope"], goal_bulk_rate)
-        cut_cal_adjustment = calc_calories_for_goal_rate(data["weight_best_fit_slope"], goal_cut_rate)
+        bulk_cal_adjustment = calc_calories_for_goal_rate(data["weight_best_fit_slope"]*days_in_week, goal_bulk_rate)
+        cut_cal_adjustment = calc_calories_for_goal_rate(data["weight_best_fit_slope"]*days_in_week, goal_cut_rate)
 
         results_file.write_heading("Results Over Past {} Week(s)".format(i))
         results_file.write_image(plot_name)
